@@ -2,14 +2,13 @@
 <html lang="en">
 
 <head>
-
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Clean Blog - Sample Post</title>
+    <title>Gestión de Sprites en JS</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -29,6 +28,7 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <link rel="stylesheet" href="gwbw/css/app.css">
 </head>
 
 <body>
@@ -42,23 +42,17 @@
                     <span class="sr-only">Toggle navigation</span>
                     Menu <i class="fa fa-bars"></i>
                 </button>
-                <a class="navbar-brand" href="index.html">Start Bootstrap</a>
+                <!--<a class="navbar-brand" href="index.html">Start Bootstrap</a>-->
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
                     <li>
-                        <a href="index.html">Home</a>
+                        <a href="http://impactophaser.com/" target="_blank">Impact o Phaser</a>
                     </li>
                     <li>
-                        <a href="about.html">About</a>
-                    </li>
-                    <li>
-                        <a href="post.html">Sample Post</a>
-                    </li>
-                    <li>
-                        <a href="contact.html">Contact</a>
+                        <a href="https://gumroad.com/impactophaser" target="_blank">Sobre el autor</a>
                     </li>
                 </ul>
             </div>
@@ -69,14 +63,14 @@
 
     <!-- Page Header -->
     <!-- Set your background image for this header on the line below. -->
-    <header class="intro-header" style="background-image: url('img/post-bg.jpg')">
+    <header class="intro-header" style="background-image: url('img/dog_bg.png'); background-color:black;">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <div class="post-heading">
-                        <h1>Man must explore, and this is exploration at its greatest</h1>
-                        <h2 class="subheading">Problems look mighty small from 150 miles up</h2>
-                        <span class="meta">Posted by <a href="#">Start Bootstrap</a> on August 24, 2014</span>
+                        <h1>Cómo gestionar una 'spritesheet' con JavaScript puro</h1>
+                        <h2 class="subheading">Precarga y anima tus sprites fácilmente</h2>
+                        <span class="meta">Escrito por <a href="https://gumroad.com/impactophaser" target="_blank">Impactophaser</a> el 11 de Noviembre de 2016</span>
                     </div>
                 </div>
             </div>
@@ -88,40 +82,266 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                    <p>Never in all their history have men been able truly to conceive of the world as one: a single sphere, a globe, having the qualities of a globe, a round earth in which all the directions eventually meet, in which there is no center because every point, or none, is center — an equal earth which all men occupy as equals. The airman's earth, if free men make it, will be truly round: a globe in practice, not in theory.</p>
+                    <p>Siempre es mejor empezar por mostrar el resultado final, para que sepas si merece la pena seguir leyendo o no. Vamos a hacer esto con JavaScript puro:</p>
+                    
+                    <div id="gwbw"></div>
 
-                    <p>Science cuts two ways, of course; its products can be used for both good and evil. But there's no turning back from science. The early warnings about technological dangers also come from science.</p>
+                    <p>Tenemos un fondo con agua animada, una acogedora lumbre y una serie de personajes llenos de vida a su alrededor. ¿Cómo programar todo esto? Es muy fácil.</p>
 
-                    <p>What was most significant about the lunar voyage was not that man set foot on the Moon but that they set eye on the earth.</p>
+                    <h2 class="section-heading">La carga de archivos</h2>
 
-                    <p>A Chinese tale tells of some men sent to harm a young girl who, upon seeing her beauty, become her protectors rather than her violators. That's how I felt seeing the Earth for the first time. I could not help but love and cherish her.</p>
+                    <p>Lo primero que necesitamos es cargar los distintos sprites. Haremos uso de nuestro propia rutina de precarga:</p>
 
-                    <p>For those who have seen the Earth from space, and for the hundreds and perhaps thousands more who will, the experience most certainly changes your perspective. The things that we share in our world are far more valuable than those which divide us.</p>
+                    <pre><code>
+                    var resourceCache = {};
+                    var loading = [];
+                    var readyCallbacks = [];
 
-                    <h2 class="section-heading">The Final Frontier</h2>
+                    // Load an image url or an array of image urls
+                    function load(urlOrArr) {
+                        if (urlOrArr instanceof Array) {
+                            urlOrArr.forEach(function(url) {
+                                _load(url);
+                            });
+                        } else {
+                            _load(urlOrArr);
+                        }
+                    }
 
-                    <p>There can be no thought of finishing for ‘aiming for the stars.’ Both figuratively and literally, it is a task to occupy the generations. And no matter how much progress one makes, there is always the thrill of just beginning.</p>
+                    function _load(url) {
+                        if (resourceCache[url]) {
+                            return resourceCache[url];
+                        } else {
+                            var img = new Image();
+                            img.onload = function() {
+                                resourceCache[url] = img;
 
-                    <p>There can be no thought of finishing for ‘aiming for the stars.’ Both figuratively and literally, it is a task to occupy the generations. And no matter how much progress one makes, there is always the thrill of just beginning.</p>
+                                if (isReady()) {
+                                    readyCallbacks.forEach(function(func) {
+                                        func();
+                                    });
+                                }
+                            };
+                            resourceCache[url] = false;
+                            img.src = url;
+                        }
+                    }
 
-                    <blockquote>The dreams of yesterday are the hopes of today and the reality of tomorrow. Science has not yet mastered prophecy. We predict too much for the next year and yet far too little for the next ten.</blockquote>
+                    function get(url) {
+                        return resourceCache[url];
+                    }
 
-                    <p>Spaceflights cannot be stopped. This is not the work of any one man or even a group of men. It is a historical process which mankind is carrying out in accordance with the natural laws of human development.</p>
+                    function isReady() {
+                        var ready = true;
+                        for (var k in resourceCache) {
+                            if (resourceCache.hasOwnProperty(k) &&
+                                !resourceCache[k]) {
+                                ready = false;
+                            }
+                        }
+                        return ready;
+                    }
 
-                    <h2 class="section-heading">Reaching for the Stars</h2>
+                    function onReady(func) {
+                        readyCallbacks.push(func);
+                    }
 
-                    <p>As we got further and further away, it [the Earth] diminished in size. Finally it shrank to the size of a marble, the most beautiful you can imagine. That beautiful, warm, living object looked so fragile, so delicate, that if you touched it with a finger it would crumble and fall apart. Seeing this has to change a man.</p>
+                    window.Resources = {
+                        load: load,
+                        get: get,
+                        onReady: onReady,
+                        isReady: isReady
+                    };
+                    </code></pre>
 
-                    <a href="#">
+                    <p>Nuestra flamante clase Resources nos permitirá cargar una serie de imágenes con sólo proporcionar sus URLs, éstas se guardarán en caché y se nos avisará vía 'callback' cuando el proceso se haya completado.</p>
+                    
+                    <p>Desde el código principal de la aplicación, sólo deberemos hacer las siguientes llamadas:</p>
+                    
+                    <pre><code>
+                    Resources.load([
+                        "img/fondo.png",
+                        "img/agua302x58.png",
+                        // etc...
+                        "img/chica61x48.png",
+                        "img/robot65x81.png",
+                        "img/perro31x34.png"
+                    ]);
+                    Resources.onReady(init);
+                    </code></pre>
+                    
+                    <p>Donde <code>init</code> es nuestra función de inicialización, que es llamada cuando la carga de todos los sprites ha terminado.</p>
+
+                    <h2 class="section-heading">Creando los sprites</h2>
+                    
+                    <p>De nuevo, nos basaremos en nuestra propia clase <code>Sprite</code> que gestionará la actualización y pintado de los sprites en pantalla. Su filosofía está inspirada en librerías como Phaser e Impact, si bien su manejo es muy sencillo: únicamente debemos pasarle los siguientes parámetros:</p>
+                    <ul>
+                        <li>La dirección URL de la imagen</li>
+                        <li>La posición inicial del primer fotograma</li>
+                        <li>El tamaño de cada fotograma en píxeles</li>
+                        <li>La velocidad de la animación (0 es pausa)</li>
+                        <li>Los fotogramas de la animación en forma de <code>Array</code> de números</li><li>Existe un último parámetro opcional que es <code>false</code> por defecto. Si pasamos un <code>true</code>, la animación sólo se ejecutará una vez.</li>
+                    </ul>
+                    <pre>
+                        <code>
+                            function Sprite(url, pos, size, speed, frames, once) {
+                                this.pos = pos;
+                                this.size = size;
+                                this.spriteSize = [Resources.get(url).width, Resources.get(url).height];
+                                this.speed = typeof speed === "number" ? speed : 0;
+                                this.frames = frames;
+                                this._index = 0;
+                                this.url = url;
+                                this.once = once || false;
+                            }
+
+                            Sprite.prototype.update = function(dt) {
+                                this._index += this.speed * dt;
+                            };
+
+                            Sprite.prototype.reset = function() {
+                                this._index = 0;
+                                this.done = false;
+                            },
+
+                            Sprite.prototype.render = function(ctx) {
+                                var frame;
+
+                                if (this.speed > 0) {
+                                    var max = this.frames.length;
+                                    var idx = Math.floor(this._index);
+                                    frame = this.frames[idx % max];
+
+                                    if (this.once && idx >= max) {
+                                        this.done = true;
+                                        return;
+                                    }
+                                } else {
+                                    frame = 0;
+                                }
+
+                                var x = this.pos[0];
+                                var y = this.pos[1];
+
+                                x += frame * this.size[0];
+                                x = x % this.spriteSize[0];
+                                if (x >= this.spriteSize[0]) {
+                                    y += this.size[1];
+                                }
+                                if (y > this.spriteSize[1]) {
+                                    y = 0;
+                                }
+
+                                ctx.drawImage(Resources.get(this.url),
+                                              x, y,
+                                              this.size[0], this.size[1],
+                                              0, 0, 
+                                              this.size[0], this.size[1]);
+                            };
+
+                            window.Sprite = Sprite;
+                        </code>
+                    </pre>
+
+                    <p>Nuestra funcion <code>init</code> será la encargadda de crear los sprites necesarios:</p>
+                    
+                    <pre><code>
+                        function init() {
+                            fondo = {
+                                pos: [0, 0],
+                                sprite: new Sprite("img/fondo.png", [0, 0], [320, 215], 0, [0]) 
+                            };
+                            agua = {
+                                pos: [6, 84],
+                                sprite: new Sprite("img/agua302x58.png", [0, 0], [302, 58], 7, [0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]) 
+                            };
+                            hoguera = {
+                                pos: [146, 129],
+                                sprite: new Sprite("img/hoguera70x57.png", [0, 0], [70, 57], 6, [0, 1, 2, 3, 4, 5, 6, 7, 8]) 
+                            };
+                            // etc...
+                            robot = {
+                                pos: [247, 113],
+                                sprite: new Sprite("img/robot65x81.png", [0, 0], [65, 81], 6, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 4, 5, 4, 5, 3, 2, 1, 6, 7, 8, 0]) 
+                            };
+                            perro = {
+                                pos: [9, 142],
+                                sprite: new Sprite("img/perro31x34.png", [0, 0], [31, 34], 6, [0, 1, 2, 1]) 
+                            };
+
+                            loop();
+                        }
+                    </code></pre>
+                    
+                    <p>Lógicamente, los elementos estáticos tienen velocidad cero y un único fotograma.</br> En cuanto disponemos de todos los elementos necesarios, llamamos a la función de nuestro bucle principal: <code>loop</code></p>
+                    
+                    <pre>
+                        <code>
+                            // The main game loop
+                            var lastTime;
+                            function loop() {
+                                var now = Date.now();
+                                var dt = (now - lastTime) / 1000.0;
+                                update(dt);
+                                render();
+                                lastTime = now;
+                                requestAnimFrame(loop);
+                            }
+                            
+                            // Update game objects
+                            function update(dt) {
+                                updateEntities(dt);
+                            }
+
+                            function updateEntities(dt) {
+                                // Update the player sprite animation
+                                fondo.sprite.update(dt);
+
+                                // Update all the objects
+                                for (var i=0; i < objects.length; i++) {
+                                    objects[i].sprite.update(dt);
+                                }
+
+                                // Update all the characters
+                                for (i=0; i < characters.length; i++) {
+                                    characters[i].sprite.update(dt);
+                                }
+                            }
+
+                            // Draw everything
+                            function render() {
+                                renderEntity(fondo);
+                                renderEntities(objects);
+                                renderEntities(characters);
+                            }
+
+                            function renderEntities(list) {
+                                for (var i=0; i < list.length; i++) {
+                                    renderEntity(list[i]);
+                                }
+                            }
+
+                            function renderEntity(entity) {
+                                ctx.save();
+                                ctx.translate(entity.pos[0], entity.pos[1]);
+                                entity.sprite.render(ctx);
+                                ctx.restore();
+                            }
+                        </code>
+                    </pre>
+
+                   <p>El bucle principal actualiza y pinta en pantalla los distintos elementos y personajes gracias a que delega en las funciones <code>update</code> y <code>render</code> de nuestra clase <code>Sprite</code>.</p>
+                   
+                    <!--<a href="#">
                         <img class="img-responsive" src="img/post-sample-image.jpg" alt="">
                     </a>
-                    <span class="caption text-muted">To go places and do things that have never been done before – that’s what living is all about.</span>
+                    <span class="caption text-muted">To go places and do things that have never been done before – that’s what living is all about.</span>-->
 
-                    <p>Space, the final frontier. These are the voyages of the Starship Enterprise. Its five-year mission: to explore strange new worlds, to seek out new life and new civilizations, to boldly go where no man has gone before.</p>
+                   <h2>Y... ¡está listo!</h2>
+                   
+                    <p>Si te gusta el lenguaje JavaScript y también sientes pasión por el desarrollo de videojuegos, puede que te interese <a href="http://impactophaser.com/" target="_blank">Impact o Phaser</a>, una guía para desarrollar un videojuego de corte 'indie' en tan sólo 72 horas.</p>
 
-                    <p>As I stand out here in the wonders of the unknown at Hadley, I sort of realize there’s a fundamental truth to our nature, Man must explore, and this is exploration at its greatest.</p>
-
-                    <p>Placeholder text by <a href="http://spaceipsum.com/">Space Ipsum</a>. Photographs by <a href="https://www.flickr.com/photos/nasacommons/">NASA on The Commons</a>.</p>
+                    <p>También puede que te interesen nuevos tutoriales como éste. Si quieres que te avise cuando suba nuevos contenidos, sígueme en <a href="https://twitter.com/impactophaser" target="_blank">Twitter</a>.</p>
                 </div>
             </div>
         </div>
@@ -136,7 +356,7 @@
                 <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <ul class="list-inline text-center">
                         <li>
-                            <a href="#">
+                            <a href="https://twitter.com/impactophaser" target="_blank">
                                 <span class="fa-stack fa-lg">
                                     <i class="fa fa-circle fa-stack-2x"></i>
                                     <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
@@ -144,23 +364,23 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#">
+                            <a href="https://gumroad.com/impactophaser" target="_blank">
                                 <span class="fa-stack fa-lg">
                                     <i class="fa fa-circle fa-stack-2x"></i>
-                                    <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                                    <i class="fa fa-empire fa-stack-1x fa-inverse"></i>
                                 </span>
                             </a>
                         </li>
                         <li>
-                            <a href="#">
+                            <a href="https://impactophaser.itch.io/" target="_blank">
                                 <span class="fa-stack fa-lg">
                                     <i class="fa fa-circle fa-stack-2x"></i>
-                                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                    <i class="fa fa-rebel fa-stack-1x fa-inverse"></i>
                                 </span>
                             </a>
                         </li>
                     </ul>
-                    <p class="copyright text-muted">Copyright &copy; Your Website 2016</p>
+                    <p class="copyright text-muted">Copyleft &copy; impactophaser.com 2016</p>
                 </div>
             </div>
         </div>
@@ -178,6 +398,11 @@
 
     <!-- Theme JavaScript -->
     <script src="js/clean-blog.min.js"></script>
+    
+    <!-- Sample App JavaScript -->
+    <script type="text/javascript" src="gwbw/js/resources.js"></script>
+    <script type="text/javascript" src="gwbw/js/sprite.js"></script>
+    <script type="text/javascript" src="gwbw/js/app.js"></script>
 
 </body>
 
